@@ -1,5 +1,5 @@
-<div (mousemove)='mouseDrag($event)'>
-    <div style="margin-top: 10px; margin-bottom: 10px; width: {{barSize}}px; height: 10px; background-color: {{barColor}};" id='audio-bar' (click)='toClick($event)' (mouseleave)='mouseUp()'>
+<div (mousemove)='mouseDrag($event)' (mouseleave)='mouseUp()'>
+    <div style="margin-top: 10px; margin-bottom: 10px; width: {{barSize}}px; height: 10px; background-color: {{barColor}};" id='audio-bar' (click)='toClick($event)'>
         <div style="position: relative; top: 50%; transform: translate(-50%,-50%); left: {{pointPosition}}px; width: 20px; height: 20px; background-color: #384048; border-radius: 50%;" id='Meatball' class='{{pointStatus}}' (mousedown)='mouseDown()' (mouseup)='mouseUp()'></div>
     </div>
     <div style="text-align: center;">
@@ -13,5 +13,13 @@
         <button (click)='audio.play()'style="background-color: {{playButtonColor}}; margin-left: 2.5px; margin-right: 2.5px;">Play</button>
         <button (click)='audio.pause()'style="background-color: transparent; margin-left: 2.5px; margin-right: 2.5px;">Pause</button>
         <button (click)='restartTime()'style="background-color: transparent; margin-left: 2.5px;">Stop</button>
+        <br>
+        <select [(ngModel)]="speed" (change)='updateSpeed()'>
+            <option value="0.25">x0.25</option>
+            <option value="0.5">x0.5</option>
+            <option value="1" selected='selected' >x1</option>
+            <option value="1.5">x1.5</option>
+            <option value="2">x2</option>
+        </select>
     </div>
 </div>

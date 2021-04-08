@@ -15,6 +15,9 @@ export class AudioBarComponent implements OnInit {
   barColorPause = '#820000'
   pointPosition = 0;
   pointStatus = '';
+  audioStatus = true;
+  speed = 1;
+  lastTime = 0; 
   time = '00:00';
   vol = '100%';
   mouseDouwn = false;
@@ -29,11 +32,10 @@ export class AudioBarComponent implements OnInit {
         this.audio.onpause = ()=>{this.barColor = this.barColorPause; this.playButtonColor = 'transparent'}
         this.audio.onplay = ()=>{this.barColor = this.barColorPlay; this.playButtonColor = '#FF3333'}
         this.audio.ontimeupdate = ()=>{this.progressBar()}
-        this.audio.play();
+        this.audio.play().then((e)=>{});
         console.log(this.audio.duration);
       }
     }
-    //this.audio.load();
     
   }
 
@@ -64,6 +66,12 @@ export class AudioBarComponent implements OnInit {
     else{
       this.vol = this.vol.replace(/(<([^>]+)>)/gi, "")
     }
+
+  }
+
+  updateSpeed(){
+
+    this.audio.playbackRate = this.speed;
 
   }
 
@@ -111,6 +119,7 @@ export class AudioBarComponent implements OnInit {
 
   mouseDown(){
     this.pointStatus = 'drag-mode';
+    this.audioStatus = (this.audio.paused) ? false : true; 
     this.audio.pause();
     this.mouseDouwn = true;
   }
@@ -119,7 +128,7 @@ export class AudioBarComponent implements OnInit {
     if(this.mouseDouwn == true){
       this.calculatePosition(this.pointPosition)
       this.pointStatus = '';
-      this.audio.play();
+      (this.audioStatus) ? this.audio.play(): this.audio.pause()
       this.mouseDouwn = false;
     }
   }
@@ -128,8 +137,9 @@ export class AudioBarComponent implements OnInit {
     
     if(this.mouseDouwn == true){
 
+      let audioBarPosition = document.getElementById('audio-bar');
       let itemId = event.target as HTMLElement;
-      let position = (itemId.id != 'Meatball') ? itemId.offsetLeft : (itemId.parentElement) ? itemId.parentElement.offsetLeft : -100;
+      let position = (audioBarPosition) ? audioBarPosition.offsetLeft : 0;
 
       if(event.clientX - position >= 0 && event.clientX - position <= this.barSize){
         this.pointPosition = event.clientX - position;
