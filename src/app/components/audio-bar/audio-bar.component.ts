@@ -8,44 +8,54 @@ import { Component, OnInit } from '@angular/core';
 export class AudioBarComponent implements OnInit {
 
   audio = new Audio();
-  barSize = 400;
+
+  barAudioSize = 450;
+  pointAudioPosition = 0;
   playButtonColor = 'transparent';
   barColor = '#820000';
   barColorPlay = '#FF0000';
-  barColorPause = '#820000'
-  pointPosition = 0;
-  pointStatus = '';
+  barColorPause = '#820000';
   audioStatus = true;
-  speed = 1;
-  lastTime = 0; 
+  speed = 1; 
   time = '00:00';
-  vol = '100%';
-  mouseDouwn = false;
+  //vol = '100%';
+  mouseDwnAudio = false;
+
+  barVolumeSize = 75;
+  pointVolumePosition = this.barVolumeSize;
+  muteColor = 'transparent';
+  muteColorUnmuted = 'transparent';
+  muteColorMuted = '#8c99a6';
+  mouseDwnVolume = false;
+
   constructor() { }
 
   ngOnInit(): void { 
-    this.audio.src = "../../../assets/test.mp3";
-    this.audio.preload="metadata";
-    this.audio.load;
+    this.prepareTheme("../../../assets/test.mp3");
+  }
+
+  prepareTheme(path:string){
+    this.audio = new Audio();
+    this.audio.src = path;
+    //this.audio.preload="metadata";
+    this.audio.load();
     this.audio.onloadedmetadata = ()=>{
       this.audio.onloadeddata = ()=>{
         this.audio.onpause = ()=>{this.barColor = this.barColorPause; this.playButtonColor = 'transparent'}
         this.audio.onplay = ()=>{this.barColor = this.barColorPlay; this.playButtonColor = '#FF3333'}
+        this.audio.onvolumechange = ()=>{this.setVol()}
         this.audio.ontimeupdate = ()=>{this.progressBar()}
-        this.audio.play().then((e)=>{});
-        console.log(this.audio.duration);
+        //this.audio.play();
       }
     }
-    
   }
 
-  incrementVol(){
+  /*incrementVol(){
 
     let increment = Math.round((this.audio.volume + 0.1) * 10) / 10;
     increment = (increment < 1) ? increment : 1;
 
     this.audio.volume = increment;
-    this.vol = `${increment * 100}%` 
   }
 
   decrementVol(){
@@ -54,20 +64,59 @@ export class AudioBarComponent implements OnInit {
     decrement = (decrement > 0) ? decrement : 0;
  
     this.audio.volume = decrement;
-    this.vol = `${decrement * 100}%` 
+  }*/
+
+  ////////////////////
+  //VOLUME FUNCTIONS//
+  ////////////////////
+
+  setVol(){
+    //this.vol = `${Math.round(this.audio.volume * 100)}%`;
+    this.setMuted();
   }
 
   muteVol(){
-
     this.audio.muted = !this.audio.muted;
+    this.setMuted();
+  }
+
+  setMuted(){
     if(this.audio.muted){
-      this.vol = `<del>${this.vol}</del>`
+      //this.vol = `<del>${this.vol}</del>`;
+      this.muteColor = this.muteColorMuted;
     }
     else{
-      this.vol = this.vol.replace(/(<([^>]+)>)/gi, "")
+      //this.vol = this.vol.replace(/(<([^>]+)>)/gi, "");
+      this.muteColor = this.muteColorUnmuted;
     }
-
   }
+
+  mouseUpVolume(){
+    if(this.mouseDwnVolume == true){
+      this.calculateVolumePosition(this.pointVolumePosition)
+      this.mouseDwnVolume = false;
+    }
+  }
+
+
+  mouseDownVolume(){
+    this.mouseDwnVolume = true;
+  }
+
+  calculateVolumePosition(coorY:number){
+    this.audio.volume = coorY / this.barVolumeSize;
+  }
+
+  toClickVolume(event:MouseEvent){
+    let itemId = event.target as HTMLElement;
+    if(itemId.id == 'audio-bar'){
+      this.calculateVolumePosition(event.offsetX);
+    }
+  }
+
+  ///////////////////
+  // BAR FUNCTIONS //
+  ///////////////////
 
   updateSpeed(){
 
@@ -75,7 +124,7 @@ export class AudioBarComponent implements OnInit {
 
   }
 
-  incrementTime(){
+  /*incrementTime(){
 
     this.audio.currentTime = this.audio.currentTime + 5;
 
@@ -85,7 +134,7 @@ export class AudioBarComponent implements OnInit {
 
     this.audio.currentTime = this.audio.currentTime - 5;
 
-  }
+  }*/
 
   restartTime(){
 
@@ -98,9 +147,9 @@ export class AudioBarComponent implements OnInit {
 
     let timeActual = this.audio.currentTime;
     let timeTotal = this.audio.duration
-    let movement = timeActual * this.barSize / timeTotal;
+    let movement = timeActual * this.barAudioSize / timeTotal;
 
-    this.pointPosition = movement;
+    this.pointAudioPosition = movement;
 
     this.incrementSeconds(Math.trunc(timeActual));
 
@@ -117,52 +166,52 @@ export class AudioBarComponent implements OnInit {
 
   }
 
-  mouseDown(){
-    this.pointStatus = 'drag-mode';
+  mouseDownAudio(){
     this.audioStatus = (this.audio.paused) ? false : true; 
     this.audio.pause();
-    this.mouseDouwn = true;
+    this.mouseDwnAudio = true;
   }
 
-  mouseUp(){
-    if(this.mouseDouwn == true){
-      this.calculatePosition(this.pointPosition)
-      this.pointStatus = '';
+  mouseUpAudio(){
+    if(this.mouseDwnAudio == true){
+      this.calculateAudioPosition(this.pointAudioPosition);
       (this.audioStatus) ? this.audio.play(): this.audio.pause()
-      this.mouseDouwn = false;
+      this.mouseDwnAudio = false;
     }
   }
 
   mouseDrag(event:MouseEvent){
     
-    if(this.mouseDouwn == true){
-
+    if(this.mouseDwnAudio == true){
       let audioBarPosition = document.getElementById('audio-bar');
-      let itemId = event.target as HTMLElement;
       let position = (audioBarPosition) ? audioBarPosition.offsetLeft : 0;
-
-      if(event.clientX - position >= 0 && event.clientX - position <= this.barSize){
-        this.pointPosition = event.clientX - position;
+      event.preventDefault();
+      if(event.clientX - position >= 0 && event.clientX - position <= this.barAudioSize){
+        this.pointAudioPosition = event.clientX - position;
       }
+    }
 
+    if(this.mouseDwnVolume == true){
+      let audioBarPosition = document.getElementById('vol-bar');
+      let position = (audioBarPosition) ? audioBarPosition.offsetLeft : 0;
+      event.preventDefault();
+      if(event.clientX - position >= 0 && event.clientX - position <= this.barVolumeSize){
+        this.pointVolumePosition = event.clientX - position;
+      }
+      this.calculateVolumePosition(this.pointVolumePosition);
     }
 
   }
 
-  calculatePosition(coorY:number){
-    this.audio.currentTime = coorY * this.audio.duration / this.barSize;
+  calculateAudioPosition(coorY:number){
+    this.audio.currentTime = coorY * this.audio.duration / this.barAudioSize;
   }
 
-  toClick(event:MouseEvent){
-
+  toClickAudio(event:MouseEvent){
     let itemId = event.target as HTMLElement;
-
     if(itemId.id == 'audio-bar'){
-
-      this.calculatePosition(event.offsetX);
-
+      this.calculateAudioPosition(event.offsetX);
     }
-
   }
-  
+
 }
