@@ -31,6 +31,9 @@ export class AudioBarComponent implements OnInit {
   audioStatus = true;
   speed = 1; 
   time = '00:00';
+  overBar = 'none'
+  timePointer = this.time;
+  timePointerPosition = 0;
   //vol = '100%';
   mouseDwnAudio = false;
 
@@ -195,14 +198,44 @@ export class AudioBarComponent implements OnInit {
     this.prepareTheme(this.themesListActive[this.position]);
   }
 
+  calculeTimeByPixel(position:number){
+    let timeTotal = this.audio.duration
+    return position * timeTotal / this.barAudioSize ;
+
+  }
+
+  calculeTimeBySeconds(position?:number){
+    let timeActual = (position) ? position : this.audio.currentTime;
+    let timeTotal = this.audio.duration
+    return timeActual * this.barAudioSize / timeTotal;
+
+  }
+
   //////////////////////
   //MULTIBAR FUNCTIONS//
   //////////////////////
 
   mouseDrag(event:MouseEvent){
     
+    let itemId:HTMLElement | string = event.target as HTMLElement;
+    itemId = itemId.id;
+    
+
+    if(itemId == 'audio-bar-padding' || itemId == 'Meatball' ){
+      this.overBar = 'block';
+      let audioBarPosition = document.getElementById('audio-bar-padding');
+      let position = (audioBarPosition) ? audioBarPosition.offsetLeft : 0;
+      position = event.clientX - position;
+      let time = this.calculeTimeByPixel(position);
+      this.timePointer = this.getSeconds(time)
+      this.timePointerPosition = position
+    }
+    else{
+      this.overBar = 'none';
+    }
+
     if(this.mouseDwnAudio == true){
-      let audioBarPosition = document.getElementById('audio-bar');
+      let audioBarPosition = document.getElementById('audio-bar-padding');
       let position = (audioBarPosition) ? audioBarPosition.offsetLeft : 0;
       event.preventDefault();
       if(event.clientX - position >= 0 && event.clientX - position <= this.barAudioSize){
@@ -224,7 +257,7 @@ export class AudioBarComponent implements OnInit {
 
   toClick(event:MouseEvent){
     let itemId = event.target as HTMLElement;
-    if(itemId.id == 'audio-bar'){
+    if(itemId.id == 'audio-bar-padding'){
       this.calculateAudioPosition(event.offsetX);
     }
     if(itemId.id == 'vol-bar'){
@@ -339,25 +372,26 @@ export class AudioBarComponent implements OnInit {
 
   progressBarAudio(){
 
-    let timeActual = this.audio.currentTime;
-    let timeTotal = this.audio.duration
-    let movement = timeActual * this.barAudioSize / timeTotal;
-
+    let movement = this.calculeTimeBySeconds();
     this.pointAudioPosition = movement;
-
-    this.incrementSeconds(Math.trunc(timeActual));
+    this.incrementSeconds();
 
   }
 
-  incrementSeconds(seconds:number){
-    
+  incrementSeconds(){
+
+    this.time = this.getSeconds();
+
+  }
+
+  getSeconds(time?:number){
+    let seconds = (time) ? time : Math.trunc(this.audio.currentTime)
     let second:number | string = Math.floor((seconds*1000 % (1000 * 60)) / 1000);
     let minute:number | string = Math.floor((seconds*1000 % (1000 * 60 * 60)) / (1000 * 60))
-    second = (second.toString().length > 1) ? second : `0${second}`
-    minute = (minute.toString().length > 1) ? minute : `0${minute}`
+    second = (second.toString().length > 1) ? second : `0${second}`;
+    minute = (minute.toString().length > 1) ? minute : `0${minute}`;
 
-    this.time = minute + ':' + second;
-
+    return minute + ':' + second;
   }
 
   mouseDownAudio(){
