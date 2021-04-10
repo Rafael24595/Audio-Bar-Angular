@@ -1,3 +1,72 @@
 .drag-mode{
     position: absolute;
 }
+.timeTag{
+    position: absolute; 
+    transform: translate(-50%,-200%); 
+    font-weight:bold; 
+    background-color:rgba(255,255,255, 0.8);
+    padding:5px;
+}
+#audio-bar-padding{
+    position: absolute; 
+    transform: translateY(-100%); 
+    margin-top: 10px; margin-bottom: 10px; 
+    height: 10px; transform: translateY(-100%);
+    padding-top: 5px; padding-bottom: 5px;
+}
+#audio-bar{
+    margin-top: 10px;
+    margin-bottom: 10px;
+    height: 10px; 
+}
+#Meatball{
+    position: relative; 
+    top: 50%; 
+    transform: translate(-50%,-50%);  
+    width: 20px; height: 20px; 
+    background-color: #384048; 
+    border-radius: 50%;
+}
+#vol-bar{
+    vertical-align: bottom; 
+    transform: translateY(25%); 
+    display: inline-block; 
+    margin-top: 10px; 
+    margin-bottom: 10px; 
+    margin-left: 10px; 
+    margin-right: 10px;  
+    height: 5px; 
+}
+#Baby-Meatball{
+    position: relative; 
+    top: 50%; 
+    transform: translate(-50%,-50%); 
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+}
+.buttonsDisplay{
+    text-align: center;
+}
+.buttonStyle{
+    background-color: transparent;
+}
+.left-button{
+    margin-right: 2.5px;
+}
+.right-button{
+    margin-left: 2.5px;
+}
+.left-button-button{
+    margin-left: 10px; 
+    margin-right: 2.5px;
+}
+.rigth-button-block{
+    margin-left: 2.5px; 
+    margin-right: 10px;
+}
+.centre-button{
+    margin-left: 2.5px;
+    margin-right: 2.5px;
+}

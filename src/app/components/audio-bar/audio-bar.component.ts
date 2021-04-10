@@ -1,4 +1,6 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { BarThemesListInterface } from 'src/app/interfaces/Bar-Themes-List';
+import { BarUtils } from 'src/utils/Bar-Utils';
 
 @Component({
   selector: 'app-audio-bar',
@@ -14,13 +16,13 @@ export class AudioBarComponent implements OnInit {
   /////////////*/
 
   audio = new Audio();
-  themesList:{id:string, name:string}[] = [
+  themesList:BarThemesListInterface[] = [
     {id: 'test-001', name:'The Last Bible III - Forest:'}, 
     {id: 'test-002', name:'Sim City 2000 - Subway Song:'}, 
     {id: 'test-003', name:'Age of Empires The Rise of Rome - Mean Ain\'t No Hip Hop In Tha House Mix:'}, 
     {id: 'test-004', name:'Doom - E1M2 - The Imps Song:'}];
-  themesListRandom:{id:string, name:string}[] = [];
-  themesListActive:{id:string, name:string}[] = this.themesList;
+  themesListRandom:BarThemesListInterface[] = [];
+  themesListActive:BarThemesListInterface[] = this.themesList;
   position = 0;
   randomList = false;
   loopList = false;
@@ -61,6 +63,14 @@ export class AudioBarComponent implements OnInit {
   barColorPlay = '#FF0000';
   barColorPause = this.barColor;
 
+  barVolColorUnmuted = '#808080';
+  barVolColorMuted = '#bfbfbf';
+  barVolColor = this.barVolColorUnmuted;
+
+  babyMeatballColorUnmuted = '#384048';
+  babyMeatballColorMuted = '#8c99a6';
+  babyMeatballColor = this.babyMeatballColorUnmuted;
+
   muteColorUnmuted = 'transparent';
   muteColorMuted = '#8c99a6';
   muteColor = this.muteColorUnmuted;
@@ -87,7 +97,7 @@ export class AudioBarComponent implements OnInit {
   //PREPARATION FUNCTIONS//
   /////////////////////////
 
-  prepareTheme(theme:{id:string, name:string}){
+  prepareTheme(theme:BarThemesListInterface){
     let muted = localStorage.getItem('isMuted');
     let loop = localStorage.getItem('isLoop');
     let volume = localStorage.getItem('volVal');
@@ -160,12 +170,12 @@ export class AudioBarComponent implements OnInit {
   randomReproduction(){
     this.randomList = !this.randomList;
     if(this.randomList){
-      this.randomizeList();
+      this.themesListRandom = BarUtils.randomizeList(this.themesList, this.position);
       this.position = 0;
       this.themesListActive = this.themesListRandom;
     }
     else{
-      this.position = this.findActualPosition();
+      this.position = BarUtils.findActualPosition(this.themesListActive, this.position, this.themesList);
       this.themesListActive = this.themesList;
     }
     this.setRandomList();
@@ -184,38 +194,6 @@ export class AudioBarComponent implements OnInit {
   ///////////////////
   //TOOLS FUNCTIONS//
   ///////////////////
-
-  randomizeList(){
-    let randomList = [];
-    let themeListTransition:{id:string, name:string}[] = this.copyArray(this.themesList) as {id:string, name:string}[];
-    randomList.push(themeListTransition[this.position]);
-    themeListTransition.splice(this.position, 1);
-    while(themeListTransition.length > 0){
-      let random = Math.floor(Math.random() * themeListTransition.length);
-      if(random < themeListTransition.length){
-        randomList.push(themeListTransition[random]);
-        themeListTransition.splice(random, 1);
-      }
-    }
-    this.themesListRandom = randomList;
-  }
-
-  getSeconds(time?:number){
-    let seconds = (time) ? time : Math.trunc(this.audio.currentTime)
-    let second:number | string = Math.floor((seconds*1000 % (1000 * 60)) / 1000);
-    let minute:number | string = Math.floor((seconds*1000 % (1000 * 60 * 60)) / (1000 * 60))
-    second = (second.toString().length > 1) ? second : `0${second}`;
-    minute = (minute.toString().length > 1) ? minute : `0${minute}`;
-
-    return minute + ':' + second;
-  }
-
-  findActualPosition(){
-    let actualId = this.themesListActive[this.position].id;
-    let index = -1;
-    this.themesList.find(theme=>{ index++; return (theme.id == actualId)})
-    return index;
-  }
 
   calculeNextThemePosition(event:Event | number){
     let action:HTMLInputElement | number = -1;
@@ -257,14 +235,6 @@ export class AudioBarComponent implements OnInit {
 
   calculateVolumePosition(coorY:number){
     this.audio.volume = coorY / this.barVolumeSize;
-  }
-
-  copyArray(array:object[]){
-    let arrayCopy = [];
-    for (const obj of array) {
-      arrayCopy.push(obj);
-    }
-    return arrayCopy
   }
 
   //////////////////////
@@ -342,10 +312,14 @@ export class AudioBarComponent implements OnInit {
     if(this.audio.muted){
       //this.vol = `<del>${this.vol}</del>`;
       this.muteColor = this.muteColorMuted;
+      this.barVolColor = this.barVolColorMuted;
+      this.babyMeatballColor = this.babyMeatballColorMuted
     }
     else{
       //this.vol = this.vol.replace(/(<([^>]+)>)/gi, "");
       this.muteColor = this.muteColorUnmuted;
+      this.barVolColor = this.barVolColorUnmuted;
+      this.babyMeatballColor = this.babyMeatballColorUnmuted;
     }
   }
 
@@ -395,19 +369,21 @@ export class AudioBarComponent implements OnInit {
   progressBarAudio(){
     let movement = this.calculeTimeBySeconds();
     this.pointAudioPosition = movement;
-    this.time = this.getSeconds();
+    this.time = BarUtils.getSeconds(Math.trunc(this.audio.currentTime));
   }
 
   showTimePointer(event:MouseEvent){
     let itemId:HTMLElement | string = event.target as HTMLElement;
     itemId = itemId.id;
-    
     if(itemId == 'audio-bar-padding' || itemId == 'Meatball' ){
       this.overBar = 'block';
-      let position = event.clientX;
-      let time = this.calculeTimeByPixel(position);
-      this.timePointer = this.getSeconds(time);
-      this.timePointerPosition = position;
+      let positionInPage = event.clientX;
+      let positionInBar:HTMLElement | number | null = document.getElementById('audio-bar-padding');
+      positionInBar = (positionInBar) ? positionInBar.offsetLeft : 0;
+      positionInBar = positionInPage - positionInBar;
+      let time = this.calculeTimeByPixel(positionInBar);
+      this.timePointer = BarUtils.getSeconds(time);
+      this.timePointerPosition = positionInPage;
     }
     else{
       this.overBar = 'none';
