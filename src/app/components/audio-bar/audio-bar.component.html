@@ -1,5 +1,5 @@
 <div (mousemove)='mouseDrag($event)' (mouseleave)='mouseUpAudio();mouseUpVolume();mouseDrag($event)' (mouseup)='mouseUpAudio();mouseUpVolume()'>
-    <p style="position: absolute; left: {{timePointerPosition}}px; display:{{overBar}}; transform: translateY(-200%); font-weight:bold; background-color:rgba(255,255,255, 0.8);
+    <p style="position: absolute; left: {{timePointerPosition}}px; display:{{overBar}}; transform: translate(-50%,-200%); font-weight:bold; background-color:rgba(255,255,255, 0.8);
     padding:5px;">{{timePointer}}</p>
     <div style="position: absolute; transform: translateY(-100%); margin-top: 10px; margin-bottom: 10px; width: {{barAudioSize}}px; height: 10px; transform: translateY(-100%);
     padding-top: 5px; padding-bottom: 5px;" id='audio-bar-padding' (mousedown)='toClick($event)'></div>

@@ -404,12 +404,10 @@ export class AudioBarComponent implements OnInit {
     
     if(itemId == 'audio-bar-padding' || itemId == 'Meatball' ){
       this.overBar = 'block';
-      let audioBarPosition = document.getElementById('audio-bar-padding');
-      let position = (audioBarPosition) ? audioBarPosition.offsetLeft : 0;
-      position = event.clientX - position;
+      let position = event.clientX;
       let time = this.calculeTimeByPixel(position);
-      this.timePointer = this.getSeconds(time)
-      this.timePointerPosition = position
+      this.timePointer = this.getSeconds(time);
+      this.timePointerPosition = position;
     }
     else{
       this.overBar = 'none';
