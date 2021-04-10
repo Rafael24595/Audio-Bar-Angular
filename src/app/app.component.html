@@ -340,12 +340,12 @@
 
   <!-- Resources -->
   <h2>Resources</h2>
-  <p>The Last Bible III:</p>
+  <p>{{themeTitle}}</p>
   <br>
 
-  <img src="../assets/image.png" style="height: 350px;">
+  <img src="../assets/{{themeSrc}}.png" style="height: 350px;">
 
-  <app-audio-bar></app-audio-bar>
+  <app-audio-bar (outputToparent)='themeObservable($event)'></app-audio-bar>
 
   <!-- Terminal -->
   <div class="terminal">

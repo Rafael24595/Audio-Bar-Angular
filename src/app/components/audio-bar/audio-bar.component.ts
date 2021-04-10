@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'app-audio-bar',
@@ -7,11 +7,24 @@ import { Component, OnInit } from '@angular/core';
 })
 export class AudioBarComponent implements OnInit {
 
-  audio = new Audio();
+  @Output() outputToparent = new EventEmitter<string>();
 
-  barAudioSize = 450;
+  themesList:{id:string, name:string}[] = [{id: 'test-001', name:'The Last Bible III - Forest:'}, {id: 'test-002', name:'Sim City 2000 - Subway Song:'}, {id: 'test-003', name:'Age of Empires The Rise of Rome - Mean Ain\'t No Hip Hop In Tha House Mix:'}];
+  themesListRandom:{id:string, name:string}[] = [];
+  themesListActive:{id:string, name:string}[] = this.themesList;
+  randomList = false;
+  loopList = false;
+  launchPaused = false;
+
+  audio = new Audio();
+  nextThemeValue = 0;
+  position = 0;
+
+  barAudioSize = 525;
   pointAudioPosition = 0;
-  playButtonColor = 'transparent';
+  playButtonColorPause = 'transparent';
+  playButtonColorPlay = '#FF3333';
+  playButtonColor = this.playButtonColorPause;
   barColor = '#820000';
   barColorPlay = '#FF0000';
   barColorPause = '#820000';
@@ -23,48 +36,201 @@ export class AudioBarComponent implements OnInit {
 
   barVolumeSize = 75;
   pointVolumePosition = this.barVolumeSize;
-  muteColor = 'transparent';
   muteColorUnmuted = 'transparent';
   muteColorMuted = '#8c99a6';
+  muteColor = this.muteColorUnmuted;
+  loopColorActive = '#8c99a6';
+  loopColorInactive = 'transparent';
+  loopColor = this.loopColorInactive;
+  randomColorActive = '#8c99a6';
+  randomColorInactive = 'transparent';
+  randomColor = this.randomColorInactive;
+  loopListColorActive = '#8c99a6';
+  loopListColorInactive = 'transparent';
+  loopListColor = this.loopColorInactive;
   mouseDwnVolume = false;
 
   constructor() { }
 
   ngOnInit(): void { 
-    this.prepareTheme("../../../assets/test.mp3");
+    this.prepareTheme(this.themesListActive[this.position]);
   }
 
-  prepareTheme(path:string){
+  prepareTheme(theme:{id:string, name:string}){
+    let muted = localStorage.getItem('isMuted');
+    let loop = localStorage.getItem('isLoop');
+    let volume = localStorage.getItem('volVal');
+    let velocity = localStorage.getItem('velVal');
+    let listLoop = localStorage.getItem('isListLoop');
+    let listRandom = localStorage.getItem('isListRandom');
+
+    this.audio.pause();
     this.audio = new Audio();
-    this.audio.src = path;
+    this.audio.src = `../../../assets/${theme.id}.mp3`;
     //this.audio.preload="metadata";
     this.audio.load();
     this.audio.onloadedmetadata = ()=>{
       this.audio.onloadeddata = ()=>{
-        this.audio.onpause = ()=>{this.barColor = this.barColorPause; this.playButtonColor = 'transparent'}
-        this.audio.onplay = ()=>{this.barColor = this.barColorPlay; this.playButtonColor = '#FF3333'}
+        this.audio.onpause = ()=>{this.barColor = this.barColorPause; this.playButtonColor = this.playButtonColorPause}
+        this.audio.onplay = ()=>{this.barColor = this.barColorPlay; this.playButtonColor = this.playButtonColorPlay}
         this.audio.onvolumechange = ()=>{this.progressBarVolume()};
-        this.audio.ontimeupdate = ()=>{this.progressBar()}
-        //this.audio.play();
+        this.audio.ontimeupdate = ()=>{this.progressBarAudio()}
+        this.audio.onended = ()=>{this.calculePosition(1)}
+
+        this.audio.muted = (muted) ? JSON.parse(muted) : this.audio.muted;
+        this.audio.loop = (loop) ? JSON.parse(loop) : this.audio.loop;
+        this.audio.volume = (volume) ? JSON.parse(volume) : this.audio.volume;
+        this.audio.playbackRate = (velocity) ? JSON.parse(velocity) : this.audio.playbackRate;
+        this.loopList = (listLoop) ? JSON.parse(listLoop) : false;
+        this.randomList = (listRandom) ? JSON.parse(listRandom) : false
+
+        this.progressBarAudio();
+        this.setLoop();
+        this.selectVelocity();
+        this.setLoopList();
+        this.setRandomList();
+
+        this.outputToparent.emit(JSON.stringify(theme));
+
+        (!this.launchPaused) ? this.audio.play() : this.launchPaused = !this.launchPaused;
       }
     }
   }
 
-  /*incrementVol(){
+  //////////////////////////
+  //REPRODUCTION FUNCTIONS//
+  //////////////////////////
 
-    let increment = Math.round((this.audio.volume + 0.1) * 10) / 10;
-    increment = (increment < 1) ? increment : 1;
-
-    this.audio.volume = increment;
+  loopListReproduction(){
+    this.loopList = !this.loopList;
+    this.setLoopList();
+    localStorage.setItem('isListLoop', JSON.stringify(this.loopList));
   }
 
-  decrementVol(){
+  setLoopList(){
+    if(this.loopList){
+      this.loopListColor = this.loopListColorActive;
+    }
+    else{
+      this.loopListColor = this.loopListColorInactive;
+    }
+  }
 
-    let decrement = Math.round((this.audio.volume - 0.1) * 10) / 10;
-    decrement = (decrement > 0) ? decrement : 0;
- 
-    this.audio.volume = decrement;
-  }*/
+  randomReproduction(){
+    this.randomList = !this.randomList;
+    if(this.randomList){
+      this.randomizeList();
+      this.position = 0;
+      this.themesListActive = this.themesListRandom;
+    }
+    else{
+      this.position = this.findActualPosition();
+      this.themesListActive = this.themesList;
+    }
+    this.setRandomList();
+    localStorage.setItem('isListRandom', JSON.stringify(this.randomList));
+  }
+
+  setRandomList(){
+    if(this.randomList){
+      this.randomColor = this.randomColorActive;
+    }
+    else{
+      this.randomColor = this.randomColorInactive;
+    }
+  }
+
+  ///////////////////
+  //TOOLS FUNCTIONS//
+  ///////////////////
+
+  randomizeList(){
+    let randomList = [];
+    let themeListTransition:{id:string, name:string}[] = this.copyArray(this.themesList) as {id:string, name:string}[];
+    randomList.push(themeListTransition[this.position]);
+    themeListTransition.splice(this.position, 1);
+    while(themeListTransition.length > 0){
+      let random = Math.floor(Math.random() * themeListTransition.length);
+      if(random < themeListTransition.length){
+        randomList.push(themeListTransition[random]);
+        themeListTransition.splice(random, 1);
+      }
+    }
+    this.themesListRandom = randomList;
+  }
+
+  findActualPosition(){
+    let actualId = this.themesListActive[this.position].id;
+    let index = -1;
+    this.themesList.find(theme=>{ index++; return (theme.id == actualId)})
+    return index;
+  }
+
+  copyArray(array:object[]){
+    let arrayCopy = [];
+    for (const obj of array) {
+      arrayCopy.push(obj);
+    }
+    return arrayCopy
+  }
+
+  calculePosition(event:Event | number){
+    let action:HTMLInputElement | number = -1;
+    if(event){
+      if(typeof event != 'number' && event.target){
+        action = event.target as HTMLInputElement;
+        action = parseInt(action.value);
+      }
+      else if(typeof event == 'number'){
+        action = event;
+      }
+      if(this.loopList){
+        action = (this.position + action < 0) ? this.themesListActive.length -1 : (this.position + action > this.themesList.length -1) ? 0 : this.position + action;
+      }
+      else{
+        (this.position + action < 0) ? (action = 0, this.launchPaused = true) : (this.position + action > this.themesListActive.length -1) ? (action = this.themesListActive.length -1, this.launchPaused = true) : action = this.position + action;
+      }
+    }
+    this.position = action;
+    this.prepareTheme(this.themesListActive[this.position]);
+  }
+
+  //////////////////////
+  //MULTIBAR FUNCTIONS//
+  //////////////////////
+
+  mouseDrag(event:MouseEvent){
+    
+    if(this.mouseDwnAudio == true){
+      let audioBarPosition = document.getElementById('audio-bar');
+      let position = (audioBarPosition) ? audioBarPosition.offsetLeft : 0;
+      event.preventDefault();
+      if(event.clientX - position >= 0 && event.clientX - position <= this.barAudioSize){
+        this.pointAudioPosition = event.clientX - position;
+      }
+    }
+
+    if(this.mouseDwnVolume == true){
+      let audioBarPosition = document.getElementById('vol-bar');
+      let position = (audioBarPosition) ? audioBarPosition.offsetLeft : 0;
+      event.preventDefault();
+      if(event.clientX - position >= 0 && event.clientX - position <= this.barVolumeSize){
+        this.pointVolumePosition = event.clientX - position;
+      }
+      this.calculateVolumePosition(this.pointVolumePosition);
+    }
+
+  }
+
+  toClick(event:MouseEvent){
+    let itemId = event.target as HTMLElement;
+    if(itemId.id == 'audio-bar'){
+      this.calculateAudioPosition(event.offsetX);
+    }
+    if(itemId.id == 'vol-bar'){
+      this.calculateVolumePosition(event.offsetX);
+    }
+  }
 
   ////////////////////
   //VOLUME FUNCTIONS//
@@ -78,12 +244,12 @@ export class AudioBarComponent implements OnInit {
 
     //this.vol = `${Math.round(this.audio.volume * 100)}%`;
     this.setMuted();
-
+    localStorage.setItem('volVal', JSON.stringify(this.audio.volume));
   }
 
   muteVol(){
     this.audio.muted = !this.audio.muted;
-    this.setMuted();
+    localStorage.setItem('isMuted', JSON.stringify(this.audio.muted));
   }
 
   setMuted(){
@@ -113,21 +279,43 @@ export class AudioBarComponent implements OnInit {
     this.audio.volume = coorY / this.barVolumeSize;
   }
 
-  toClickVolume(event:MouseEvent){
-    let itemId = event.target as HTMLElement;
-    if(itemId.id == 'vol-bar'){
-      this.calculateVolumePosition(event.offsetX);
-    }
+   /*incrementVol(){
+
+    let increment = Math.round((this.audio.volume + 0.1) * 10) / 10;
+    increment = (increment < 1) ? increment : 1;
+
+    this.audio.volume = increment;
   }
+
+  decrementVol(){
+
+    let decrement = Math.round((this.audio.volume - 0.1) * 10) / 10;
+    decrement = (decrement > 0) ? decrement : 0;
+ 
+    this.audio.volume = decrement;
+  }*/
 
   ///////////////////
   // BAR FUNCTIONS //
   ///////////////////
 
+  selectVelocity(){
+    this.speed = this.audio.playbackRate;
+  }
+
+  loopAudio(){
+    this.audio.loop = !this.audio.loop;
+    this.setLoop()
+    localStorage.setItem('isLoop', JSON.stringify(this.audio.loop));
+  }
+
+  setLoop(){
+    this.loopColor = (this.audio.loop) ? this.loopColorActive : this.loopColorInactive;
+  }
+
   updateSpeed(){
-
     this.audio.playbackRate = this.speed;
-
+    localStorage.setItem('velVal', JSON.stringify(this.audio.playbackRate));
   }
 
   /*incrementTime(){
@@ -149,7 +337,7 @@ export class AudioBarComponent implements OnInit {
 
   }
 
-  progressBar(){
+  progressBarAudio(){
 
     let timeActual = this.audio.currentTime;
     let timeTotal = this.audio.duration
@@ -186,38 +374,8 @@ export class AudioBarComponent implements OnInit {
     }
   }
 
-  mouseDrag(event:MouseEvent){
-    
-    if(this.mouseDwnAudio == true){
-      let audioBarPosition = document.getElementById('audio-bar');
-      let position = (audioBarPosition) ? audioBarPosition.offsetLeft : 0;
-      event.preventDefault();
-      if(event.clientX - position >= 0 && event.clientX - position <= this.barAudioSize){
-        this.pointAudioPosition = event.clientX - position;
-      }
-    }
-
-    if(this.mouseDwnVolume == true){
-      let audioBarPosition = document.getElementById('vol-bar');
-      let position = (audioBarPosition) ? audioBarPosition.offsetLeft : 0;
-      event.preventDefault();
-      if(event.clientX - position >= 0 && event.clientX - position <= this.barVolumeSize){
-        this.pointVolumePosition = event.clientX - position;
-      }
-      this.calculateVolumePosition(this.pointVolumePosition);
-    }
-
-  }
-
   calculateAudioPosition(coorY:number){
     this.audio.currentTime = coorY * this.audio.duration / this.barAudioSize;
-  }
-
-  toClickAudio(event:MouseEvent){
-    let itemId = event.target as HTMLElement;
-    if(itemId.id == 'audio-bar'){
-      this.calculateAudioPosition(event.offsetX);
-    }
   }
 
 }
