@@ -2,20 +2,20 @@
     <p style="position: absolute; left: {{timePointerPosition}}px; display:{{overBar}}; transform: translateY(-200%); font-weight:bold; background-color:rgba(255,255,255, 0.8);
     padding:5px;">{{timePointer}}</p>
     <div style="position: absolute; transform: translateY(-100%); margin-top: 10px; margin-bottom: 10px; width: {{barAudioSize}}px; height: 10px; transform: translateY(-100%);
-    padding-top: 5px; padding-bottom: 5px;" id='audio-bar-padding' (click)='toClick($event)'></div>
-    <div style="margin-top: 10px; margin-bottom: 10px; width: {{barAudioSize}}px; height: 10px; background-color: {{barColor}};" id='audio-bar' (click)='toClick($event)'>
+    padding-top: 5px; padding-bottom: 5px;" id='audio-bar-padding' (mousedown)='toClick($event)'></div>
+    <div style="margin-top: 10px; margin-bottom: 10px; width: {{barAudioSize}}px; height: 10px; background-color: {{barColor}};" id='audio-bar'>
         <div style="position: relative; top: 50%; transform: translate(-50%,-50%); left: {{pointAudioPosition}}px; width: 20px; height: 20px; background-color: #384048; border-radius: 50%;" id='Meatball' (mousedown)='mouseDownAudio()'></div>
     </div>
     <div style="text-align: center;">
         <div style="margin-left: 5px; display: inline-block;">
-            <button (click)='calculePosition($event)' value="-1" style="background-color: transparent; margin-right: 2.5px;">Prev</button>
-            <button (click)='calculePosition($event)' value="1" style="background-color: transparent; margin-left: 2.5px; margin-right: 10px;">Next</button>
+            <button (click)='calculeNextThemePosition($event)' value="-1" style="background-color: transparent; margin-right: 2.5px;">Prev</button>
+            <button (click)='calculeNextThemePosition($event)' value="1" style="background-color: transparent; margin-left: 2.5px; margin-right: 10px;">Next</button>
             <button (click)='(audio.paused) ? audio.play() : audio.pause()'style="background-color: {{playButtonColor}}; margin-left: 2.5px; margin-right: 2.5px;">Play</button>
             <!--<button (click)='audio.pause()'style="background-color: transparent; margin-left: 2.5px; margin-right: 2.5px;">Pause</button>-->
-            <button (click)='restartTime()'style="background-color: transparent; margin-left: 2.5px;">Stop</button>
+            <button (click)='stopAudio()'style="background-color: transparent; margin-left: 2.5px;">Stop</button>
             <!--<button (click)='decrementVol()' style="background-color: transparent; margin-right: 2.5px;">V-</button>-->
             <button (click)='muteVol()'style="background-color: {{muteColor}}; margin-left: 10px; margin-right: 2.5px;">Mute</button>
-            <div style="vertical-align: bottom; transform: translateY(25%); display: inline-block; margin-top: 10px; margin-bottom: 10px; margin-left: 10px; margin-right: 10px; width: {{barVolumeSize}}px; height: 5px; background-color: gray;" id='vol-bar' (click)='toClick($event)'>
+            <div style="vertical-align: bottom; transform: translateY(25%); display: inline-block; margin-top: 10px; margin-bottom: 10px; margin-left: 10px; margin-right: 10px; width: {{barVolumeSize}}px; height: 5px; background-color: gray;" id='vol-bar' (mousedown)='toClick($event)'>
                 <div style="position: relative; top: 50%; transform: translate(-50%,-50%); left: {{pointVolumePosition}}px; width: 15px; height: 15px; background-color: #384048; border-radius: 50%;" id='Baby-Meatball' (mousedown)='mouseDownVolume()'></div>
             </div>
             <!--<button (click)='incrementVol()'style="background-color: transparent; margin-left: 2.5px; margin-right: 2.5px;">V+</button>-->
