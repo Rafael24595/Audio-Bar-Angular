@@ -416,4 +416,34 @@ export class AudioBarComponent implements OnInit {
 
   }*/
 
+  /////////////////////
+  // BETA FUNCTIONS //
+  ////////////////////
+
+  revertAudio(src:string) {
+    
+    var context = new AudioContext();
+    var xhr = new XMLHttpRequest(),
+    method = "GET",
+    url = src;
+
+    xhr.open(method, url, true);
+    xhr.responseType = 'arraybuffer';
+    xhr.onreadystatechange = function () {
+      if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+        context.decodeAudioData(xhr.response, function(buffer){
+          var src = context.createBufferSource();
+          Array.prototype.reverse.call(buffer.getChannelData(0));
+          Array.prototype.reverse.call(buffer.getChannelData(1));
+          src.buffer = buffer;
+          src.connect(context.destination);
+          src.start();
+        });
+      }
+    };
+
+    xhr.send();
+
+  }
+
 }
