@@ -15,7 +15,6 @@ export class AudioBarComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void { 
-    this.revertAudio('../../../assets/test-001.mp3');
     this.prepareTheme(this.themesListActive[this.position]);
   }
 
@@ -139,7 +138,7 @@ export class AudioBarComponent implements OnInit {
 
         this.outputToparent.emit(JSON.stringify(theme));
 
-        //(!this.launchPaused) ? this.audio.play() : this.launchPaused = !this.launchPaused;
+        (!this.launchPaused) ? this.audio.play() : this.launchPaused = !this.launchPaused;
       }
     }
   }
@@ -427,52 +426,72 @@ export class AudioBarComponent implements OnInit {
   ////////////////////
 
   revertAudioImplement(){
-    let srcChange = (this.isReverse) ? this.normalSrc : this.reverseSrc;
-    this.audio.pause();
-    let time = this.audio.duration - this.audio.currentTime;
-    this.audio.src = srcChange;
-    this.audio.currentTime = time;
-    this.audio.play();
 
-    this.isReverse = !this.isReverse;
+    if(this.audio.src != this.reverseSrc){
+
+      this.audio.pause();
+
+      let loadGif = document.getElementById('loadGif') as HTMLElement;
+      loadGif.style.visibility = 'initial';
+
+      this.revertAudio(this.audio.src).then(()=>{
+      
+        loadGif.style.visibility = 'hidden';
+        let srcChange = (this.isReverse) ? this.normalSrc : this.reverseSrc;
+        let time = this.audio.duration - this.audio.currentTime;
+        this.audio.src = srcChange;
+        this.audio.currentTime = time;
+        this.audio.play();
+  
+        this.isReverse = !this.isReverse;
+  
+      });
+
+    }
+
   }
 
   revertAudio(src:string) {
     
-    var context = new AudioContext();
-    var xhr = new XMLHttpRequest(),
-    method = "GET",
-    url = src;
+    return new Promise(resolve=>{
 
-    xhr.open(method, url, true);
-    xhr.responseType = 'arraybuffer';
-    xhr.onreadystatechange = ()=> this.xhrReady(xhr, context);
-    xhr.send();
+      var context = new AudioContext();
+      var xhr = new XMLHttpRequest(),
+      method = "GET",
+      url = src;
+
+      xhr.open(method, url, true);
+      xhr.responseType = 'arraybuffer';
+      xhr.onreadystatechange = ()=> this.xhrReady(xhr, context).then(()=>resolve(true));
+      xhr.send();
+
+    })
 
   }
 
   xhrReady(xhr: { readyState: number; status: number; response: any; }, context: { decodeAudioData: (arg0: any, arg1: (buffer: any) => void) => void; createBufferSource: () => any; }){
 
-    if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-      context.decodeAudioData(xhr.response, (buffer)=>{
-        var src = context.createBufferSource();
-        Array.prototype.reverse.call(buffer.getChannelData(0));
-        Array.prototype.reverse.call(buffer.getChannelData(1));
-        src.buffer = buffer;
+    return new Promise(resolve=>{
 
-        var wav = AudiobufferToWav.audioBufferToWav(buffer);
-        let blob = new Blob([wav],{type:'mp3'});
-        let blobUrl = URL.createObjectURL(blob);
+      if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+        context.decodeAudioData(xhr.response, (buffer)=>{
+          var src = context.createBufferSource();
+          Array.prototype.reverse.call(buffer.getChannelData(0));
+          Array.prototype.reverse.call(buffer.getChannelData(1));
+          src.buffer = buffer;
+  
+          var wav = AudiobufferToWav.audioBufferToWav(buffer);
+          let blob = new Blob([wav],{type:'mp3'});
+          let blobUrl = URL.createObjectURL(blob);
+  
+          this.reverseSrc = blobUrl;
+  
+          resolve(true);
+          
+        });
+      }
 
-        this.reverseSrc = blobUrl;
-
-        let test = new Audio(blobUrl);
-        test.load();
-        test.onloadeddata = ()=>{
-          //test.play()
-        }
-      });
-    }
+    });
 
   }
 
