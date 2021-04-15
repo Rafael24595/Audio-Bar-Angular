@@ -1,5 +1,6 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { BarThemesListInterface } from 'src/app/interfaces/Bar-Themes-List';
+import { AudiobufferToWav } from 'src/utils/AudionufferToWav';
 import { BarUtils } from 'src/utils/Bar-Utils';
 
 @Component({
@@ -48,6 +49,9 @@ export class AudioBarComponent implements OnInit {
   timePointerPosition = 0;
   audioStatus = true;
   mouseDwnAudio = false;
+  isReverse = false;
+  normalSrc = '';
+  reverseSrc = '';
 
   /*/////////////
   | VOlUME VARS |
@@ -106,9 +110,10 @@ export class AudioBarComponent implements OnInit {
     let listLoop = localStorage.getItem('isListLoop');
     let listRandom = localStorage.getItem('isListRandom');
 
+    this.normalSrc = `../../../assets/${theme.id}.mp3`
     this.audio.pause();
     this.audio = new Audio();
-    this.audio.src = `../../../assets/${theme.id}.mp3`;
+    this.audio.src = this.normalSrc;
     //this.audio.preload="metadata";
     this.audio.load();
     this.audio.onloadedmetadata = ()=>{
@@ -225,7 +230,7 @@ export class AudioBarComponent implements OnInit {
 
   calculeTimeBySeconds(position?:number){
     let timeActual = (position) ? position : this.audio.currentTime;
-    let timeTotal = this.audio.duration
+    let timeTotal = this.audio.duration;
     return timeActual * this.barAudioSize / timeTotal;
 
   }
@@ -421,6 +426,17 @@ export class AudioBarComponent implements OnInit {
   // BETA FUNCTIONS //
   ////////////////////
 
+  revertAudioImplement(){
+    let srcChange = (this.isReverse) ? this.normalSrc : this.reverseSrc;
+    this.audio.pause();
+    let time = this.audio.duration - this.audio.currentTime;
+    this.audio.src = srcChange;
+    this.audio.currentTime = time;
+    this.audio.play();
+
+    this.isReverse = !this.isReverse;
+  }
+
   revertAudio(src:string) {
     
     var context = new AudioContext();
@@ -430,25 +446,33 @@ export class AudioBarComponent implements OnInit {
 
     xhr.open(method, url, true);
     xhr.responseType = 'arraybuffer';
-    xhr.onreadystatechange = function () {
-      if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-        context.decodeAudioData(xhr.response, function(buffer){
-          var src = context.createBufferSource();
-          Array.prototype.reverse.call(buffer.getChannelData(0));
-          Array.prototype.reverse.call(buffer.getChannelData(1));
-          src.buffer = buffer;
-
-          let x = new Blob([src.buffer.getChannelData(0),src.buffer.getChannelData(1)],{type:'mp3'});
-          let url = URL.createObjectURL(x);
-          console.log(url)
-
-          src.connect(context.destination);
-          //src.start();
-        });
-      }
-    };
-
+    xhr.onreadystatechange = ()=> this.xhrReady(xhr, context);
     xhr.send();
+
+  }
+
+  xhrReady(xhr: { readyState: number; status: number; response: any; }, context: { decodeAudioData: (arg0: any, arg1: (buffer: any) => void) => void; createBufferSource: () => any; }){
+
+    if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+      context.decodeAudioData(xhr.response, (buffer)=>{
+        var src = context.createBufferSource();
+        Array.prototype.reverse.call(buffer.getChannelData(0));
+        Array.prototype.reverse.call(buffer.getChannelData(1));
+        src.buffer = buffer;
+
+        var wav = AudiobufferToWav.audioBufferToWav(buffer);
+        let blob = new Blob([wav],{type:'mp3'});
+        let blobUrl = URL.createObjectURL(blob);
+
+        this.reverseSrc = blobUrl;
+
+        let test = new Audio(blobUrl);
+        test.load();
+        test.onloadeddata = ()=>{
+          //test.play()
+        }
+      });
+    }
 
   }
 
