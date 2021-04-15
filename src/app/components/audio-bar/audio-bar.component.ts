@@ -11,6 +11,13 @@ export class AudioBarComponent implements OnInit {
 
   @Output() outputToparent = new EventEmitter<string>();
 
+  constructor() { }
+
+  ngOnInit(): void { 
+    this.revertAudio('../../../assets/test-001.mp3');
+    this.prepareTheme(this.themesListActive[this.position]);
+  }
+
   /*/////////////
   | THEMES VARS |
   /////////////*/
@@ -87,12 +94,6 @@ export class AudioBarComponent implements OnInit {
   loopListColorInactive = 'transparent';
   loopListColor = this.loopListColorInactive;
 
-  constructor() { }
-
-  ngOnInit(): void { 
-    this.prepareTheme(this.themesListActive[this.position]);
-  }
-
   /////////////////////////
   //PREPARATION FUNCTIONS//
   /////////////////////////
@@ -133,7 +134,7 @@ export class AudioBarComponent implements OnInit {
 
         this.outputToparent.emit(JSON.stringify(theme));
 
-        (!this.launchPaused) ? this.audio.play() : this.launchPaused = !this.launchPaused;
+        //(!this.launchPaused) ? this.audio.play() : this.launchPaused = !this.launchPaused;
       }
     }
   }
@@ -436,8 +437,13 @@ export class AudioBarComponent implements OnInit {
           Array.prototype.reverse.call(buffer.getChannelData(0));
           Array.prototype.reverse.call(buffer.getChannelData(1));
           src.buffer = buffer;
+
+          let x = new Blob([src.buffer.getChannelData(0),src.buffer.getChannelData(1)],{type:'mp3'});
+          let url = URL.createObjectURL(x);
+          console.log(url)
+
           src.connect(context.destination);
-          src.start();
+          //src.start();
         });
       }
     };
