@@ -2,6 +2,16 @@ import { BarThemesListInterface } from "src/app/interfaces/Bar-Themes-List";
 
 export class BarUtils{
 
+  public static positionInBar(cuersorPosition:number, item:HTMLElement | null){
+    let overflow = 
+    (item) 
+      ? (Math.sign(item.getBoundingClientRect().x) < 0) 
+        ? Math.abs(item.getBoundingClientRect().x) 
+        : item.getBoundingClientRect().x * -1
+      : 0 ;
+    return cuersorPosition + overflow;
+  }
+
     public static randomizeList(themesList:{id:string, name:string}[],position:number){
         let randomList = [];
         let themeListTransition:{id:string, name:string}[] = this.copyArray(themesList) as {id:string, name:string}[];

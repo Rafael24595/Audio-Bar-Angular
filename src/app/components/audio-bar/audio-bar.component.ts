@@ -1,3 +1,4 @@
+import { flatten } from '@angular/compiler';
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { BarThemesListInterface } from 'src/app/interfaces/Bar-Themes-List';
 import { AudiobufferToWav } from 'src/utils/AudionufferToWav';
@@ -65,13 +66,19 @@ export class AudioBarComponent implements OnInit {
   | COLOR VARS |
   ////////////*/
 
+  loadGifHidden = 'hidden';
+  loadGifVisible = 'initial';
+  loadGif = this.loadGifHidden;
+
   playButtonColorPause = 'transparent';
   playButtonColorPlay = '#FF3333';
   playButtonColor = this.playButtonColorPause;
 
-  barColor = '#820000';
+  barColorPause = '#820000';
   barColorPlay = '#FF0000';
-  barColorPause = this.barColor;
+  barColorReversePlay = '#8117FF';
+  barColorReversePause = '#44305C';
+  barColor = this.barColorPause ;
 
   barVolColorUnmuted = '#808080';
   barVolColorMuted = '#bfbfbf';
@@ -97,6 +104,10 @@ export class AudioBarComponent implements OnInit {
   loopListColorInactive = 'transparent';
   loopListColor = this.loopListColorInactive;
 
+  reverseColorActive = '#8c99a6';
+  reverseColorInactive = 'transparent';
+  reverseColor = this.loopListColorInactive;
+
   /////////////////////////
   //PREPARATION FUNCTIONS//
   /////////////////////////
@@ -109,7 +120,9 @@ export class AudioBarComponent implements OnInit {
     let listLoop = localStorage.getItem('isListLoop');
     let listRandom = localStorage.getItem('isListRandom');
 
-    this.normalSrc = `../../../assets/${theme.id}.mp3`
+    this.isReverse = false;
+    this.reverseSrc = '';
+    this.normalSrc = `../../../assets/${theme.id}.mp3`;
     this.audio.pause();
     this.audio = new Audio();
     this.audio.src = this.normalSrc;
@@ -117,8 +130,8 @@ export class AudioBarComponent implements OnInit {
     this.audio.load();
     this.audio.onloadedmetadata = ()=>{
       this.audio.onloadeddata = ()=>{
-        this.audio.onpause = ()=>{this.barColor = this.barColorPause; this.playButtonColor = this.playButtonColorPause}
-        this.audio.onplay = ()=>{this.barColor = this.barColorPlay; this.playButtonColor = this.playButtonColorPlay}
+        this.audio.onpause = ()=>{this.setPlay()}
+        this.audio.onplay = ()=>{this.setPlay()}
         this.audio.onvolumechange = ()=>{this.progressBarVolume()};
         this.audio.ontimeupdate = ()=>{this.progressBarAudio()}
         this.audio.onended = ()=>{this.calculeNextThemePosition(1)}
@@ -135,6 +148,7 @@ export class AudioBarComponent implements OnInit {
         this.selectVelocity();
         this.setLoopList();
         this.setRandomList();
+        this.setReverse();
 
         this.outputToparent.emit(JSON.stringify(theme));
 
@@ -151,6 +165,30 @@ export class AudioBarComponent implements OnInit {
     this.loopList = !this.loopList;
     this.setLoopList();
     localStorage.setItem('isListLoop', JSON.stringify(this.loopList));
+  }
+
+  setPlay(){
+
+    if(this.audio.paused){
+      this.barColor = (this.isReverse) ? this.barColorReversePause : this.barColorPause; 
+      this.playButtonColor = this.playButtonColorPause
+    }
+    else{
+      this.barColor = (this.isReverse) ? this.barColorReversePlay : this.barColorPlay;
+      this.playButtonColor = this.playButtonColorPlay;
+    }
+
+  }
+
+  setReverse(){
+    if(this.isReverse){
+      this.reverseColor = this.reverseColorActive
+      this.barColor = (this.audio.paused) ? this.barColorReversePause : this.barColorReversePlay;
+    }
+    else{
+      this.reverseColor = this.reverseColorInactive;
+      this.barColor = (this.audio.paused) ? this.barColorPause : this.barColorPlay;
+    }
   }
 
   setLoopList(){
@@ -239,7 +277,13 @@ export class AudioBarComponent implements OnInit {
   }
 
   calculateVolumePosition(coorY:number){
-    this.audio.volume = coorY / this.barVolumeSize;
+    let vol = 
+      (coorY / this.barVolumeSize > 1) 
+        ? 1 
+        : (coorY / this.barVolumeSize < 0.001)
+          ? 0
+          : coorY / this.barVolumeSize;
+    this.audio.volume = vol;
   }
 
   //////////////////////
@@ -277,12 +321,12 @@ export class AudioBarComponent implements OnInit {
   ////////////////////
 
   volumeBarDrag(event:MouseEvent){
-    let audioBarPosition = document.getElementById('vol-bar');
-    let position = (audioBarPosition) ? audioBarPosition.offsetLeft : 0;
+    let volBarPosition = document.getElementById('vol-bar');
+    let position = (volBarPosition) ? volBarPosition.offsetLeft : 0;
     event.preventDefault();
 
     if(event.clientX - position >= 0 && event.clientX - position <= this.barVolumeSize){
-      this.pointVolumePosition = event.clientX - position;
+      this.pointVolumePosition = BarUtils.positionInBar(event.clientX, volBarPosition);
     }
     this.calculateVolumePosition(this.pointVolumePosition);
   }
@@ -349,11 +393,11 @@ export class AudioBarComponent implements OnInit {
   ///////////////////
 
   audioBarDrag(event:MouseEvent){
-    let audioBarPosition = document.getElementById('audio-bar-padding');
+      let audioBarPosition = document.getElementById('audio-bar-padding');
       let position = (audioBarPosition) ? audioBarPosition.offsetLeft : 0;
       event.preventDefault();
       if(event.clientX - position >= 0 && event.clientX - position <= this.barAudioSize){
-        this.pointAudioPosition = event.clientX - position;
+        this.pointAudioPosition = BarUtils.positionInBar(event.clientX, audioBarPosition);
       }
   }
 
@@ -372,21 +416,19 @@ export class AudioBarComponent implements OnInit {
   }
 
   progressBarAudio(){
-    let movement = this.calculeTimeBySeconds();
+    let movement = (!this.isReverse) ? this.calculeTimeBySeconds() : this.calculeTimeBySeconds(this.audio.duration - this.audio.currentTime);
     this.pointAudioPosition = movement;
-    this.time = BarUtils.getSeconds(Math.trunc(this.audio.currentTime));
+    this.time = BarUtils.getSeconds((!this.isReverse) ? Math.trunc(this.audio.currentTime) : Math.trunc(this.audio.duration - this.audio.currentTime));
   }
 
   showTimePointer(event:MouseEvent){
-    let itemId:HTMLElement | string = event.target as HTMLElement;
-    itemId = itemId.id;
+    let item:HTMLElement | string = event.target as HTMLElement;
+    let itemId = item.id;
+    item = (itemId == 'Meatball' && item.parentElement) ? item.parentElement : item;
     if(itemId == 'audio-bar-padding' || itemId == 'Meatball' ){
       this.overBar = 'block';
-      let positionInPage = event.clientX;
-      let positionInBar:HTMLElement | number | null = document.getElementById('audio-bar-padding');
-      positionInBar = (positionInBar) ? positionInBar.offsetLeft : 0;
-      positionInBar = positionInPage - positionInBar;
-      let time = this.calculeTimeByPixel(positionInBar);
+      let positionInPage = BarUtils.positionInBar(event.clientX, item);
+      let time = this.calculeTimeByPixel(positionInPage);
       this.timePointer = BarUtils.getSeconds(time);
       this.timePointerPosition = positionInPage;
     }
@@ -427,35 +469,42 @@ export class AudioBarComponent implements OnInit {
 
   revertAudioImplement(){
 
+    this.loadGif = this.loadGifVisible;
+    this.audioStatus = (this.audio.paused) ? false : true;
+
     if(this.audio.src != this.reverseSrc){
-
       this.audio.pause();
-
-      let loadGif = document.getElementById('loadGif') as HTMLElement;
-      loadGif.style.visibility = 'initial';
-
-      this.revertAudio(this.audio.src).then(()=>{
-      
-        loadGif.style.visibility = 'hidden';
-        let time = this.audio.duration - this.audio.currentTime;
-        this.audio.src = this.reverseSrc;
-        this.audio.currentTime = time;
-        this.audio.play();
-  
-        this.isReverse = true;
-  
-      });
-
+      (this.reverseSrc == '')
+        ? this.revertAudio(this.audio.src).then(()=>{this.isReverse = true; this.switchSRC()})
+        : (this.isReverse = true, this.switchSRC()) ;  
     }
     else{
+      this.isReverse = false;
+      this.switchSRC();
+    }
+  }
 
+  switchSRC(){
+
+    if(this.isReverse){
+
+      this.loadGif = this.loadGifHidden;
+      let time = this.audio.duration - this.audio.currentTime;
+      this.audio.src = this.reverseSrc;
+      this.audio.currentTime = time;
+
+    }else{
+
+      this.loadGif = this.loadGifHidden;
       let time = this.audio.duration - this.audio.currentTime;
       this.audio.src = this.normalSrc;
       this.audio.currentTime = time;
 
-      this.isReverse = false;
-
     }
+
+    this.setReverse();
+    (this.audioStatus) ? this.audio.play() : this.audio.pause();
+    this.audioStatus = (this.audio.paused) ? false : true; 
 
   }
 

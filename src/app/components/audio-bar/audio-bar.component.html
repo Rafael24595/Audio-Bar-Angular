@@ -1,8 +1,8 @@
 <div (mousemove)='mouseDrag($event)' (mouseleave)='mouseUpAudio();mouseUpVolume();mouseDrag($event)' (mouseup)='mouseUpAudio();mouseUpVolume()'>
-    <p class="timeTag" style="left: {{timePointerPosition}}px; display:{{overBar}}; ">{{timePointer}}</p>
+    <p class="timeTag" style="margin-left: {{timePointerPosition}}px; display:{{overBar}}; ">{{timePointer}}</p>
     <div style="width: {{barAudioSize}}px;" id='audio-bar-padding' (mousedown)='toClick($event)'></div>
     <div style="width: {{barAudioSize}}px; background-color: {{barColor}};" id='audio-bar'>
-        <div style="left: {{pointAudioPosition}}px;" id='Meatball' (mousedown)='mouseDownAudio()'></div>
+        <div style="margin-left: {{pointAudioPosition}}px;" id='Meatball' (mousedown)='mouseDownAudio()'></div>
     </div>
     <div class="buttonsDisplay">
         <div>
@@ -33,10 +33,10 @@
                 <option value="2">x2</option>
             </select>
             <br><br>
-            <button (click)='randomReproduction()' class="rigth-button-block" style="background-color: {{randomColor}};">Random</button>
-            <button (click)='loopListReproduction()' class="rigth-button-block" style="background-color: {{loopListColor}};">Loop-List</button>
-            <button (click)='revertAudioImplement()' class="rigth-button-block" style="background-color: transparent;">Reverse-Rep</button>
-            <img style="height: 25px; vertical-align: bottom; visibility: hidden;" id="loadGif" src="../../../assets/load.gif">
+            <button (click)='randomReproduction()' class="left-button-button" style="background-color: {{randomColor}};">Random</button>
+            <button (click)='loopListReproduction()' class="centre-button" style="background-color: {{loopListColor}};">Loop-List</button>
+            <button (click)='revertAudioImplement()' class="rigth-button-button" style="background-color: {{reverseColor}};">Reverse-Rep</button>
+            <img style="height: 25px; vertical-align: bottom; visibility: {{loadGif}};" id="loadGif" src="../../../assets/load.gif">
         </div>
     </div>
 </div>
