@@ -323,7 +323,7 @@ export class AudioBarComponent implements OnInit {
   volumeBarDrag(event:MouseEvent){
     let volBarPosition = document.getElementById('vol-bar');
     let position = BarUtils.positionInBar(event.clientX, volBarPosition);
-    event.preventDefault();console.log(BarUtils.positionInBar(event.clientX, volBarPosition))
+    event.preventDefault();
 
     if(position >= 0 && position <= this.barVolumeSize){
       this.pointVolumePosition = position
@@ -409,7 +409,7 @@ export class AudioBarComponent implements OnInit {
 
   mouseUpAudio(){
     if(this.mouseDwnAudio == true){
-      this.calculateAudioPosition(this.pointAudioPosition);
+      (!this.isReverse) ? this.calculateAudioPosition(this.pointAudioPosition) : this.calculateAudioPosition(this.barAudioSize - this.pointAudioPosition);
       (this.audioStatus) ? this.audio.play(): this.audio.pause();
       this.mouseDwnAudio = false;
     }
