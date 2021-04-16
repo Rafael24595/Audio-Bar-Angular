@@ -76,8 +76,8 @@ export class AudioBarComponent implements OnInit {
 
   barColorPause = '#820000';
   barColorPlay = '#FF0000';
-  barColorReversePlay = '#8117FF';
-  barColorReversePause = '#44305C';
+  barColorReversePlay = '#FF6600';
+  barColorReversePause = '#993D00';
   barColor = this.barColorPause ;
 
   barVolColorUnmuted = '#808080';
@@ -307,7 +307,7 @@ export class AudioBarComponent implements OnInit {
   toClick(event:MouseEvent){
     let itemId = event.target as HTMLElement;
     if(itemId.id == 'audio-bar-padding'){
-      this.calculateAudioPosition(event.offsetX);
+      (!this.isReverse) ? this.calculateAudioPosition(event.offsetX) : this.calculateAudioPosition(this.barAudioSize - event.offsetX) ;
       this.mouseDownAudio();
     }
     if(itemId.id == 'vol-bar'){
@@ -325,7 +325,7 @@ export class AudioBarComponent implements OnInit {
     let position = BarUtils.positionInBar(event.clientX, volBarPosition);
     event.preventDefault();
 
-    if(position >= 0 && position <= this.barVolumeSize){
+    if(position >= -1 && position <= this.barVolumeSize + 1){
       this.pointVolumePosition = position
     }
     this.calculateVolumePosition(this.pointVolumePosition);

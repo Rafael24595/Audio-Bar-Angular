@@ -44,7 +44,9 @@ export class BarUtils{
 
       public static getSeconds(time:number){
         let second:number | string = Math.floor((time * 1000 % (1000 * 60)) / 1000);
-        let minute:number | string = Math.floor((time * 1000 % (1000 * 60 * 60)) / (1000 * 60))
+        let minute:number | string = Math.floor((time * 1000 % (1000 * 60 * 60)) / (1000 * 60));
+        second = (second >= 0) ? second : 0;
+        minute = (minute >= 0) ? minute : 0;
         second = (second.toString().length > 1) ? second : `0${second}`;
         minute = (minute.toString().length > 1) ? minute : `0${minute}`;
     

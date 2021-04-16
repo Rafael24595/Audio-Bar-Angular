@@ -6,13 +6,13 @@
     </div>
     <div class="buttonsDisplay">
         <div>
-            <button (click)='calculeNextThemePosition($event)' value="-1" class="buttonStyle left-button" >Prev</button>
-            <button (click)='calculeNextThemePosition($event)' value="1" class="buttonStyle rigth-button-block">Next</button>
-            <button (click)='(audio.paused) ? audio.play() : audio.pause()' class="centre-button" style="background-color: {{playButtonColor}};">Play</button>
+            <button (click)='calculeNextThemePosition($event)' value="-1" class="buttonStyle left-button cursor-pointer" >Prev</button>
+            <button (click)='calculeNextThemePosition($event)' value="1" class="buttonStyle rigth-button-block cursor-pointer">Next</button>
+            <button (click)='(audio.paused) ? audio.play() : audio.pause()' class="centre-button cursor-pointer" style="background-color: {{playButtonColor}};">Play</button>
             <!--<button (click)='audio.pause()'style="background-color: transparent; margin-left: 2.5px; margin-right: 2.5px;">Pause</button>-->
-            <button (click)='stopAudio()' class="buttonStyle right-button">Stop</button>
+            <button (click)='stopAudio()' class="buttonStyle right-button cursor-pointer">Stop</button>
             <!--<button (click)='decrementVol()' style="background-color: transparent; margin-right: 2.5px;">V-</button>-->
-            <button (click)='muteVol()' class="left-button-button" style="background-color: {{muteColor}};">Mute</button>
+            <button (click)='muteVol()' class="left-button-button cursor-pointer" style="background-color: {{muteColor}};">Mute</button>
             <div class="centre-button" style="width: {{barVolumeSize}}px; background-color: {{barVolColor}};" id='vol-bar' (mousedown)='toClick($event)'>
                 <div style="margin-left: {{pointVolumePosition}}px; background-color: {{babyMeatballColor}};" id='Baby-Meatball' (mousedown)='mouseDownVolume()'></div>
             </div>
@@ -21,8 +21,8 @@
             <!--<button (click)='decremenTime()' style="background-color: transparent; margin-left: 2.5px; margin-right: 2.5px;">-</button>-->
             <!--<button (click)='incrementTime()' style="background-color: transparent; margin-left: 2.5px; margin-right: 2.5px;">+</button>-->
             <span class="centre-button">{{time}}</span>
-            <button (click)='loopAudio()' class="centre-button" style="background-color: {{loopColor}};">loop</button>
-            <select [(ngModel)]="speed" (change)='updateSpeed()' class="right-button">
+            <button (click)='loopAudio()' class="centre-button cursor-pointer" style="background-color: {{loopColor}};">loop</button>
+            <select [(ngModel)]="speed" (change)='updateSpeed()' class="right-button cursor-pointer">
                 <option value="0.25">x0.25</option>
                 <option value="0.5">x0.5</option>
                 <option value="0.75">x0.75</option>
@@ -33,9 +33,9 @@
                 <option value="2">x2</option>
             </select>
             <br><br>
-            <button (click)='randomReproduction()' class="left-button-button" style="background-color: {{randomColor}};">Random</button>
-            <button (click)='loopListReproduction()' class="centre-button" style="background-color: {{loopListColor}};">Loop-List</button>
-            <button (click)='revertAudioImplement()' class="rigth-button-button" style="background-color: {{reverseColor}};">Reverse-Rep</button>
+            <button (click)='randomReproduction()' class="left-button-button cursor-pointer" style="background-color: {{randomColor}};">Random</button>
+            <button (click)='loopListReproduction()' class="centre-button cursor-pointer" style="background-color: {{loopListColor}};">Loop-List</button>
+            <button (click)='revertAudioImplement()' class="rigth-button-button cursor-pointer" style="background-color: {{reverseColor}};">Reverse-Rep</button>
             <img style="height: 25px; vertical-align: bottom; visibility: {{loadGif}};" id="loadGif" src="../../../assets/load.gif">
         </div>
     </div>
