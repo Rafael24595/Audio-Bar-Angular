@@ -437,15 +437,23 @@ export class AudioBarComponent implements OnInit {
       this.revertAudio(this.audio.src).then(()=>{
       
         loadGif.style.visibility = 'hidden';
-        let srcChange = (this.isReverse) ? this.normalSrc : this.reverseSrc;
         let time = this.audio.duration - this.audio.currentTime;
-        this.audio.src = srcChange;
+        this.audio.src = this.reverseSrc;
         this.audio.currentTime = time;
         this.audio.play();
   
-        this.isReverse = !this.isReverse;
+        this.isReverse = true;
   
       });
+
+    }
+    else{
+
+      let time = this.audio.duration - this.audio.currentTime;
+      this.audio.src = this.normalSrc;
+      this.audio.currentTime = time;
+
+      this.isReverse = false;
 
     }
 
