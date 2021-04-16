@@ -322,11 +322,11 @@ export class AudioBarComponent implements OnInit {
 
   volumeBarDrag(event:MouseEvent){
     let volBarPosition = document.getElementById('vol-bar');
-    let position = (volBarPosition) ? volBarPosition.offsetLeft : 0;
-    event.preventDefault();
+    let position = BarUtils.positionInBar(event.clientX, volBarPosition);
+    event.preventDefault();console.log(BarUtils.positionInBar(event.clientX, volBarPosition))
 
-    if(event.clientX - position >= 0 && event.clientX - position <= this.barVolumeSize){
-      this.pointVolumePosition = BarUtils.positionInBar(event.clientX, volBarPosition);
+    if(position >= 0 && position <= this.barVolumeSize){
+      this.pointVolumePosition = position
     }
     this.calculateVolumePosition(this.pointVolumePosition);
   }

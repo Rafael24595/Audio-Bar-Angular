@@ -14,7 +14,7 @@
             <!--<button (click)='decrementVol()' style="background-color: transparent; margin-right: 2.5px;">V-</button>-->
             <button (click)='muteVol()' class="left-button-button" style="background-color: {{muteColor}};">Mute</button>
             <div class="centre-button" style="width: {{barVolumeSize}}px; background-color: {{barVolColor}};" id='vol-bar' (mousedown)='toClick($event)'>
-                <div style="left: {{pointVolumePosition}}px; background-color: {{babyMeatballColor}};" id='Baby-Meatball' (mousedown)='mouseDownVolume()'></div>
+                <div style="margin-left: {{pointVolumePosition}}px; background-color: {{babyMeatballColor}};" id='Baby-Meatball' (mousedown)='mouseDownVolume()'></div>
             </div>
             <!--<button (click)='incrementVol()'style="background-color: transparent; margin-left: 2.5px; margin-right: 2.5px;">V+</button>-->
             <!--<span [innerHTML]='vol'></span>-->
