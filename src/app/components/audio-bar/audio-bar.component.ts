@@ -1,4 +1,3 @@
-import { flatten } from '@angular/compiler';
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { BarThemesListInterface } from 'src/app/interfaces/Bar-Themes-List';
 import { AudiobufferToWav } from 'src/utils/AudionufferToWav';
@@ -112,7 +111,7 @@ export class AudioBarComponent implements OnInit {
   //PREPARATION FUNCTIONS//
   /////////////////////////
 
-  prepareTheme(theme:BarThemesListInterface){
+  prepareTheme(theme?:BarThemesListInterface){
     let muted = localStorage.getItem('isMuted');
     let loop = localStorage.getItem('isLoop');
     let volume = localStorage.getItem('volVal');
@@ -120,12 +119,19 @@ export class AudioBarComponent implements OnInit {
     let listLoop = localStorage.getItem('isListLoop');
     let listRandom = localStorage.getItem('isListRandom');
 
-    this.isReverse = false;
-    this.reverseSrc = '';
-    this.normalSrc = `../../../assets/${theme.id}.mp3`;
+    if(theme){
+
+      this.isReverse =  false;
+      this.reverseSrc = '';
+      this.normalSrc = `../../../assets/${theme.id}.mp3`;
+
+      this.outputToparent.emit(JSON.stringify(theme));
+
+    }
+
     this.audio.pause();
     this.audio = new Audio();
-    this.audio.src = this.normalSrc;
+    this.audio.src = (this.isReverse) ? this.reverseSrc : this.normalSrc;
     //this.audio.preload="metadata";
     this.audio.load();
     this.audio.onloadedmetadata = ()=>{
@@ -149,8 +155,6 @@ export class AudioBarComponent implements OnInit {
         this.setLoopList();
         this.setRandomList();
         this.setReverse();
-
-        this.outputToparent.emit(JSON.stringify(theme));
 
         (!this.launchPaused) ? this.audio.play() : this.launchPaused = !this.launchPaused;
       }
@@ -490,14 +494,14 @@ export class AudioBarComponent implements OnInit {
 
       this.loadGif = this.loadGifHidden;
       let time = this.audio.duration - this.audio.currentTime;
-      this.audio.src = this.reverseSrc;
+      this.prepareTheme();
       this.audio.currentTime = time;
 
     }else{
 
       this.loadGif = this.loadGifHidden;
       let time = this.audio.duration - this.audio.currentTime;
-      this.audio.src = this.normalSrc;
+      this.prepareTheme();
       this.audio.currentTime = time;
 
     }
