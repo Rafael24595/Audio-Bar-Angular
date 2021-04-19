@@ -9,10 +9,11 @@
     padding:5px;
 }
 #audio-bar-padding{
+    z-index: 2;
     position: absolute; 
-    transform: translateY(-100%); 
     margin-top: 10px; margin-bottom: 10px; 
-    height: 10px; transform: translateY(-100%);
+    height: 10px; 
+    transform: translateY(-100%);
     padding-top: 5px; padding-bottom: 5px;
     cursor: pointer;
 }
@@ -20,6 +21,21 @@
     margin-top: 10px;
     margin-bottom: 10px;
     height: 10px; 
+    background-color: #808080
+}
+#audio-bar-progress{
+    position: absolute;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    height: 10px; 
+    transform: translateY(-100%);
+}
+#audio-bar-background{
+    position: absolute;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    height: 10px; 
+    transform: translateY(-100%);
 }
 #Meatball{
     position: relative; 
@@ -32,7 +48,18 @@
 }
 #vol-bar{
     vertical-align: bottom; 
-    transform: translateY(25%); 
+    display: inline-block; 
+    margin-top: 10px; 
+    margin-bottom: 10px; 
+    margin-left: 10px; 
+    margin-right: 10px;  
+    height: 5px; 
+    background-color: #bfbfbf;
+    cursor: pointer;
+}
+#vol-bar-progress{
+    position: absolute;
+    vertical-align: bottom; 
     display: inline-block; 
     margin-top: 10px; 
     margin-bottom: 10px; 
@@ -40,6 +67,18 @@
     margin-right: 10px;  
     height: 5px; 
     cursor: pointer;
+}
+#vol-bar-padding{
+    position: absolute;
+    vertical-align: bottom; 
+    display: inline-block; 
+    margin-top: 10px; 
+    margin-bottom: 10px; 
+    margin-left: 10px; 
+    margin-right: 10px;  
+    height: 5px; 
+    cursor: pointer;
+    z-index: 2;
 }
 #Baby-Meatball{
     position: relative; 

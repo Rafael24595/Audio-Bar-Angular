@@ -40,6 +40,7 @@ export class AudioBarComponent implements OnInit {
   ////////////*/
 
   barAudioSize = 525;
+  barAudioSizeProgress = 0
   pointAudioPosition = 0;
   speed = 1; 
   time = '00:00';
@@ -57,6 +58,7 @@ export class AudioBarComponent implements OnInit {
   /////////////*/
 
   barVolumeSize = 75;
+  barVolumeSizeProgress = this.barVolumeSize;
   pointVolumePosition = this.barVolumeSize;
   mouseDwnVolume = false;
   //vol = '100%';
@@ -80,7 +82,10 @@ export class AudioBarComponent implements OnInit {
   barColor = this.barColorPause ;
 
   barVolColorUnmuted = '#808080';
-  barVolColorMuted = '#bfbfbf';
+  barVolColorMuted = '#A6A6A6';
+  barVolColorBackUnmuted ='#BFBFBF';
+  barVolColorBackMuted = '#D9D9D9';
+  barVolColorBack = this.barVolColorBackUnmuted;
   barVolColor = this.barVolColorUnmuted;
 
   babyMeatballColorUnmuted = '#384048';
@@ -155,6 +160,7 @@ export class AudioBarComponent implements OnInit {
         this.setLoopList();
         this.setRandomList();
         this.setReverse();
+        this.setPlay();
 
         (!this.launchPaused) ? this.audio.play() : this.launchPaused = !this.launchPaused;
       }
@@ -314,7 +320,7 @@ export class AudioBarComponent implements OnInit {
       (!this.isReverse) ? this.calculateAudioPosition(event.offsetX) : this.calculateAudioPosition(this.barAudioSize - event.offsetX) ;
       this.mouseDownAudio();
     }
-    if(itemId.id == 'vol-bar'){
+    if(itemId.id == 'vol-bar-padding'){
       this.calculateVolumePosition(event.offsetX);
       this.mouseDownVolume();
     }
@@ -331,6 +337,7 @@ export class AudioBarComponent implements OnInit {
 
     if(position >= -1 && position <= this.barVolumeSize + 1){
       this.pointVolumePosition = position
+      this.barVolumeSizeProgress = position;
     }
     this.calculateVolumePosition(this.pointVolumePosition);
   }
@@ -350,6 +357,7 @@ export class AudioBarComponent implements OnInit {
     let volActual = this.audio.volume;
     let movement = volActual * this.barVolumeSize;
     this.pointVolumePosition = movement;
+    this.barVolumeSizeProgress = movement;
 
     //this.vol = `${Math.round(this.audio.volume * 100)}%`;
     this.setMuted();
@@ -366,12 +374,14 @@ export class AudioBarComponent implements OnInit {
       //this.vol = `<del>${this.vol}</del>`;
       this.muteColor = this.muteColorMuted;
       this.barVolColor = this.barVolColorMuted;
+      this.barVolColorBack = this.barVolColorBackMuted;
       this.babyMeatballColor = this.babyMeatballColorMuted
     }
     else{
       //this.vol = this.vol.replace(/(<([^>]+)>)/gi, "");
       this.muteColor = this.muteColorUnmuted;
       this.barVolColor = this.barVolColorUnmuted;
+      this.barVolColorBack = this.barVolColorBackUnmuted;
       this.babyMeatballColor = this.babyMeatballColorUnmuted;
     }
   }
@@ -401,7 +411,9 @@ export class AudioBarComponent implements OnInit {
       let position = (audioBarPosition) ? audioBarPosition.offsetLeft : 0;
       event.preventDefault();
       if(event.clientX - position >= 0 && event.clientX - position <= this.barAudioSize){
-        this.pointAudioPosition = BarUtils.positionInBar(event.clientX, audioBarPosition);
+        let movement = BarUtils.positionInBar(event.clientX, audioBarPosition)
+        this.pointAudioPosition = movement;
+        this.barAudioSizeProgress = movement;
       }
   }
 
@@ -422,6 +434,7 @@ export class AudioBarComponent implements OnInit {
   progressBarAudio(){
     let movement = (!this.isReverse) ? this.calculeTimeBySeconds() : this.calculeTimeBySeconds(this.audio.duration - this.audio.currentTime);
     this.pointAudioPosition = movement;
+    this.barAudioSizeProgress = movement;
     this.time = BarUtils.getSeconds((!this.isReverse) ? Math.trunc(this.audio.currentTime) : Math.trunc(this.audio.duration - this.audio.currentTime));
   }
 
@@ -496,6 +509,7 @@ export class AudioBarComponent implements OnInit {
       let time = this.audio.duration - this.audio.currentTime;
       this.prepareTheme();
       this.audio.currentTime = time;
+      this.audio.play();
 
     }else{
 

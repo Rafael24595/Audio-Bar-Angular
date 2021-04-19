@@ -1,8 +1,11 @@
 <div (mousemove)='mouseDrag($event)' (mouseleave)='mouseUpAudio();mouseUpVolume();mouseDrag($event)' (mouseup)='mouseUpAudio();mouseUpVolume()'>
-    <p class="timeTag" style="margin-left: {{timePointerPosition}}px; display:{{overBar}}; ">{{timePointer}}</p>
-    <div style="width: {{barAudioSize}}px;" id='audio-bar-padding' (mousedown)='toClick($event)'></div>
-    <div style="width: {{barAudioSize}}px; background-color: {{barColor}};" id='audio-bar'>
-        <div style="margin-left: {{pointAudioPosition}}px;" id='Meatball' (mousedown)='mouseDownAudio()'></div>
+    <div>
+        <p class="timeTag" style="margin-left: {{timePointerPosition}}px; display:{{overBar}}; ">{{timePointer}}</p>
+        <div style="width: {{barAudioSize}}px;" id='audio-bar-padding' (mousedown)='toClick($event)'></div>
+        <div style="width: {{barAudioSizeProgress}}px; background-color: {{barColor}};" id='audio-bar-progress'></div>
+        <div style="width: {{barAudioSize}}px;" id='audio-bar'>
+            <div style="margin-left: {{pointAudioPosition}}px;" id='Meatball' (mousedown)='mouseDownAudio()'></div>
+        </div>
     </div>
     <div class="buttonsDisplay">
         <div>
@@ -13,8 +16,12 @@
             <button (click)='stopAudio()' class="buttonStyle right-button cursor-pointer">Stop</button>
             <!--<button (click)='decrementVol()' style="background-color: transparent; margin-right: 2.5px;">V-</button>-->
             <button (click)='muteVol()' class="left-button-button cursor-pointer" style="background-color: {{muteColor}};">Mute</button>
-            <div class="centre-button" style="width: {{barVolumeSize}}px; background-color: {{barVolColor}};" id='vol-bar' (mousedown)='toClick($event)'>
-                <div style="margin-left: {{pointVolumePosition}}px; background-color: {{babyMeatballColor}};" id='Baby-Meatball' (mousedown)='mouseDownVolume()'></div>
+            <div style="display: inline-block; transform: translateY(16%);">
+                <div style="width: {{barVolumeSize}}px;" id='vol-bar-padding' (mousedown)='toClick($event)'></div>
+                <div style="width: {{barVolumeSizeProgress}}px; background-color: {{barVolColor}};" id='vol-bar-progress'></div>
+                <div style="width: {{barVolumeSize}}px; background-color: {{barVolColorBack}};" id='vol-bar'>
+                    <div style="margin-left: {{pointVolumePosition}}px; background-color: {{babyMeatballColor}};" id='Baby-Meatball' (mousedown)='mouseDownVolume()'></div>
+                </div>
             </div>
             <!--<button (click)='incrementVol()'style="background-color: transparent; margin-left: 2.5px; margin-right: 2.5px;">V+</button>-->
             <!--<span [innerHTML]='vol'></span>-->
