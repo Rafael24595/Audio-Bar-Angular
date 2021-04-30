@@ -2,6 +2,7 @@ import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { BarThemesListInterface } from 'src/app/interfaces/Bar-Themes-List';
 import { AudiobufferToWav } from 'src/utils/AudionufferToWav';
 import { BarUtils } from 'src/utils/Bar-Utils';
+import { Color_Vars } from 'src/utils/variables/Bar-Variables';
 
 @Component({
   selector: 'app-audio-bar',
@@ -34,6 +35,8 @@ export class AudioBarComponent implements OnInit {
   randomList = false;
   loopList = false;
   launchPaused = false;
+  normalSrc = '';
+  reverseSrc = '';
 
   /*////////////
   | AUDIO VARS |
@@ -50,8 +53,6 @@ export class AudioBarComponent implements OnInit {
   audioStatus = true;
   mouseDwnAudio = false;
   isReverse = false;
-  normalSrc = '';
-  reverseSrc = '';
 
   /*/////////////
   | VOlUME VARS |
@@ -67,77 +68,34 @@ export class AudioBarComponent implements OnInit {
   | COLOR VARS |
   ////////////*/
 
-  loadGifHidden = 'hidden';
-  loadGifVisible = 'initial';
-  loadGif = this.loadGifHidden;
-
-  playButtonColorPause = 'transparent';
-  playButtonColorPlay = '#FF3333';
-  playButtonColor = this.playButtonColorPause;
-
-  barColorPause = '#820000';
-  barColorPlay = '#FF0000';
-  barColorReversePlay = '#FF6600';
-  barColorReversePause = '#993D00';
-  barColor = this.barColorPause ;
-
-  barVolColorUnmuted = '#808080';
-  barVolColorMuted = '#A6A6A6';
-  barVolColorBackUnmuted ='#BFBFBF';
-  barVolColorBackMuted = '#D9D9D9';
-  barVolColorBack = this.barVolColorBackUnmuted;
-  barVolColor = this.barVolColorUnmuted;
-
-  babyMeatballColorUnmuted = '#384048';
-  babyMeatballColorMuted = '#8c99a6';
-  babyMeatballColor = this.babyMeatballColorUnmuted;
-
-  muteColorUnmuted = 'transparent';
-  muteColorMuted = '#8c99a6';
-  muteColor = this.muteColorUnmuted;
-
-  loopColorActive = '#8c99a6';
-  loopColorInactive = 'transparent';
-  loopColor = this.loopColorInactive;
-
-  randomColorActive = '#8c99a6';
-  randomColorInactive = 'transparent';
-  randomColor = this.randomColorInactive;
-
-  loopListColorActive = '#8c99a6';
-  loopListColorInactive = 'transparent';
-  loopListColor = this.loopListColorInactive;
-
-  reverseColorActive = '#8c99a6';
-  reverseColorInactive = 'transparent';
-  reverseColor = this.loopListColorInactive;
+  loadGif = Color_Vars.load_gif_status.hidden;
+  playButtonColor = Color_Vars.button_play_color.pause;
+  barColor = Color_Vars.bar_progress_color.pause;
+  barVolColorBack = Color_Vars.bar_volume_color.background.unmuted;
+  barVolColor = Color_Vars.bar_volume_color.front.unmuted;
+  babyMeatballColor = Color_Vars.meatball_color.baby.unmuted;
+  muteColor = Color_Vars.button_mute_color.unmuted;
+  loopColor = Color_Vars.button_loop_color.normal;
+  randomColor = Color_Vars.button_random_color.normal;
+  loopListColor = Color_Vars.button_loop_list_color.normal;
+  reverseColor = Color_Vars.button_reverse_color.normal;
 
   /////////////////////////
   //PREPARATION FUNCTIONS//
   /////////////////////////
 
   prepareTheme(theme?:BarThemesListInterface){
-    let muted = localStorage.getItem('isMuted');
-    let loop = localStorage.getItem('isLoop');
-    let volume = localStorage.getItem('volVal');
-    let velocity = localStorage.getItem('velVal');
-    let listLoop = localStorage.getItem('isListLoop');
-    let listRandom = localStorage.getItem('isListRandom');
-
+    
     if(theme){
-
       this.isReverse =  false;
       this.reverseSrc = '';
       this.normalSrc = `../../../assets/${theme.id}.mp3`;
-
       this.outputToparent.emit(JSON.stringify(theme));
-
     }
 
     this.audio.pause();
     this.audio = new Audio();
     this.audio.src = (this.isReverse) ? this.reverseSrc : this.normalSrc;
-    //this.audio.preload="metadata";
     this.audio.load();
     this.audio.onloadedmetadata = ()=>{
       this.audio.onloadeddata = ()=>{
@@ -147,22 +105,9 @@ export class AudioBarComponent implements OnInit {
         this.audio.ontimeupdate = ()=>{this.progressBarAudio()}
         this.audio.onended = ()=>{this.calculeNextThemePosition(1)}
 
-        this.audio.muted = (muted) ? JSON.parse(muted) : this.audio.muted;
-        this.audio.loop = (loop) ? JSON.parse(loop) : this.audio.loop;
-        this.audio.volume = (volume) ? JSON.parse(volume) : this.audio.volume;
-        this.audio.playbackRate = (velocity) ? JSON.parse(velocity) : this.audio.playbackRate;
-        this.loopList = (listLoop) ? JSON.parse(listLoop) : false;
-        this.randomList = (listRandom) ? JSON.parse(listRandom) : false
+        this.setDefaultThemeValues();
+        this.setDefaultInterfaceValues();
 
-        this.progressBarAudio();
-        this.setLoopAudio();
-        this.selectVelocity();
-        this.setLoopList();
-        this.setRandomList();
-        this.setReverse();
-        this.setPlay();
-
-        (!this.launchPaused) ? this.audio.play() : this.launchPaused = !this.launchPaused;
       }
     }
   }
@@ -171,6 +116,38 @@ export class AudioBarComponent implements OnInit {
   //REPRODUCTION FUNCTIONS//
   //////////////////////////
 
+  setDefaultInterfaceValues(){
+
+    this.progressBarAudio();
+    this.setLoopAudio();
+    this.selectVelocity();
+    this.setLoopList();
+    this.setRandomList();
+    this.setReverse();
+    this.setPlay();
+
+    (!this.launchPaused) ? this.audio.play() : this.launchPaused = !this.launchPaused;
+
+  }
+
+  setDefaultThemeValues(){
+
+    let muted = localStorage.getItem('isMuted');
+    let loop = localStorage.getItem('isLoop');
+    let volume = localStorage.getItem('volVal');
+    let velocity = localStorage.getItem('velVal');
+    let listLoop = localStorage.getItem('isListLoop');
+    let listRandom = localStorage.getItem('isListRandom');
+
+    this.audio.muted = (muted) ? JSON.parse(muted) : this.audio.muted;
+    this.audio.loop = (loop) ? JSON.parse(loop) : this.audio.loop;
+    this.audio.volume = (volume) ? JSON.parse(volume) : this.audio.volume;
+    this.audio.playbackRate = (velocity) ? JSON.parse(velocity) : this.audio.playbackRate;
+    this.loopList = (listLoop) ? JSON.parse(listLoop) : false;
+    this.randomList = (listRandom) ? JSON.parse(listRandom) : false;
+
+  }
+
   loopListReproduction(){
     this.loopList = !this.loopList;
     this.setLoopList();
@@ -178,35 +155,33 @@ export class AudioBarComponent implements OnInit {
   }
 
   setPlay(){
-
     if(this.audio.paused){
-      this.barColor = (this.isReverse) ? this.barColorReversePause : this.barColorPause; 
-      this.playButtonColor = this.playButtonColorPause
+      this.barColor = (this.isReverse) ? Color_Vars.bar_progress_color.reverse_rause : Color_Vars.bar_progress_color.pause; 
+      this.playButtonColor = Color_Vars.button_play_color.pause;
     }
     else{
-      this.barColor = (this.isReverse) ? this.barColorReversePlay : this.barColorPlay;
-      this.playButtonColor = this.playButtonColorPlay;
+      this.barColor = (this.isReverse) ? Color_Vars.bar_progress_color.reverse_play : Color_Vars.bar_progress_color.play;
+      this.playButtonColor = Color_Vars.button_play_color.play;
     }
-
   }
 
   setReverse(){
     if(this.isReverse){
-      this.reverseColor = this.reverseColorActive
-      this.barColor = (this.audio.paused) ? this.barColorReversePause : this.barColorReversePlay;
+      this.reverseColor = Color_Vars.button_reverse_color.reverse;
+      this.barColor = (this.audio.paused) ? Color_Vars.bar_progress_color.reverse_rause : Color_Vars.bar_progress_color.reverse_play;
     }
     else{
-      this.reverseColor = this.reverseColorInactive;
-      this.barColor = (this.audio.paused) ? this.barColorPause : this.barColorPlay;
+      this.reverseColor = Color_Vars.button_reverse_color.normal;
+      this.barColor = (this.audio.paused) ? Color_Vars.bar_progress_color.pause : Color_Vars.bar_progress_color.play;
     }
   }
 
   setLoopList(){
     if(this.loopList){
-      this.loopListColor = this.loopListColorActive;
+      this.loopListColor = Color_Vars.button_loop_list_color.loop;
     }
     else{
-      this.loopListColor = this.loopListColorInactive;
+      this.loopListColor = Color_Vars.button_loop_list_color.normal;
     }
   }
 
@@ -217,7 +192,7 @@ export class AudioBarComponent implements OnInit {
   }
 
   setLoopAudio(){
-    this.loopColor = (this.audio.loop) ? this.loopColorActive : this.loopColorInactive;
+    this.loopColor = (this.audio.loop) ? Color_Vars.button_loop_color.loop : Color_Vars.button_loop_color.normal;
   }
 
   randomReproduction(){
@@ -237,10 +212,10 @@ export class AudioBarComponent implements OnInit {
 
   setRandomList(){
     if(this.randomList){
-      this.randomColor = this.randomColorActive;
+      this.randomColor = Color_Vars.button_random_color.random;
     }
     else{
-      this.randomColor = this.randomColorInactive;
+      this.randomColor = Color_Vars.button_random_color.normal;
     }
   }
 
@@ -372,17 +347,17 @@ export class AudioBarComponent implements OnInit {
   setMuted(){
     if(this.audio.muted){
       //this.vol = `<del>${this.vol}</del>`;
-      this.muteColor = this.muteColorMuted;
-      this.barVolColor = this.barVolColorMuted;
-      this.barVolColorBack = this.barVolColorBackMuted;
-      this.babyMeatballColor = this.babyMeatballColorMuted
+      this.muteColor = Color_Vars.button_mute_color.muted;
+      this.barVolColor = Color_Vars.bar_volume_color.front.muted;
+      this.barVolColorBack = Color_Vars.bar_volume_color.background.muted;
+      this.babyMeatballColor = Color_Vars.meatball_color.baby.muted;
     }
     else{
       //this.vol = this.vol.replace(/(<([^>]+)>)/gi, "");
-      this.muteColor = this.muteColorUnmuted;
-      this.barVolColor = this.barVolColorUnmuted;
-      this.barVolColorBack = this.barVolColorBackUnmuted;
-      this.babyMeatballColor = this.babyMeatballColorUnmuted;
+      this.muteColor = Color_Vars.button_mute_color.unmuted;
+      this.barVolColor = Color_Vars.bar_volume_color.front.unmuted;
+      this.barVolColorBack = Color_Vars.bar_volume_color.background.unmuted;
+      this.babyMeatballColor = Color_Vars.meatball_color.baby.unmuted;
     }
   }
 
@@ -486,7 +461,7 @@ export class AudioBarComponent implements OnInit {
 
   revertAudioImplement(){
 
-    this.loadGif = this.loadGifVisible;
+    this.loadGif = Color_Vars.load_gif_status.visible;
     this.audioStatus = (this.audio.paused) ? false : true;
 
     if(this.audio.src != this.reverseSrc){
@@ -505,7 +480,7 @@ export class AudioBarComponent implements OnInit {
 
     if(this.isReverse){
 
-      this.loadGif = this.loadGifHidden;
+      this.loadGif = Color_Vars.load_gif_status.hidden;
       let time = this.audio.duration - this.audio.currentTime;
       this.prepareTheme();
       this.audio.currentTime = time;
@@ -513,7 +488,7 @@ export class AudioBarComponent implements OnInit {
 
     }else{
 
-      this.loadGif = this.loadGifHidden;
+      this.loadGif = Color_Vars.load_gif_status.hidden;
       let time = this.audio.duration - this.audio.currentTime;
       this.prepareTheme();
       this.audio.currentTime = time;
